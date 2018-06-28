@@ -26,3 +26,23 @@ def form_decorator(func):
                   </body></html>""".format(func(*args, **kwargs))
         return HttpResponse(html)
     return inner_function
+
+
+def create_person(request):
+    pass
+
+
+def modify_person(request):
+    pass
+
+
+def delete_person(request):
+    pass
+
+
+def show_person(request):
+    pass
+
+
+def show_all(request):
+    pass

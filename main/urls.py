@@ -20,4 +20,9 @@ from address_book.views import *
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    url(r'^new', create_person),
+    url(r'^modify/(?P<id>\d+)/$', modify_person),
+    url(r'^delete/(?P<id>\d+)/$', delete_person),
+    url(r'^show/(?P<id>\d+)/$', show_person),
+    url(r'^/', show_all),
 ]
