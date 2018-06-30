@@ -62,10 +62,105 @@ def create_person(request):
     return response
 
 
-@form_decorator
+@html_decorator
 def modify_person(request, id):
     person = Person.objects.get(id=id)
-    res = ""
+    if request.method == "GET":
+        personal_form = "<form enctype='multipart/form-data' action='#' method='post'>{}</form>"
+        personal_data = """<label>Imię:<br>
+                         <input type='text' name='person_name' value={}>
+                         </label><br><br>
+                         <label>Nazwisko:<br>
+                         <input type='text' name='person_surname' value={}>
+                         </label><br><br>
+                         <label>Opis:<br>
+                         <textarea cols='50' rows='10' name='person_description'></textarea>
+                         </label><br><br>
+                         <label>Zdjęcie:<br>
+                         <input type='image' name='person_photo' value='załącz plik'>
+                         </label><br><br>
+                         <button name='personal'>Zmień dane</button>""".format(person.name,
+                                                                               person.surname)
+
+        address_form = """<form action='/{}/addAddress/' method='post'>
+                         <fieldset>
+                         <legend><b>Dane adresowe</b></legend>        
+                         <label>Miasto:<br>
+                         <input type='text' name='person_city'>
+                         </label><br><br>
+                         <label>Ulica:<br>
+                         <input type='text' name='person_street'>
+                         </label><br><br>
+                         <label>Numer domu:<br>
+                         <input type='number' name='person_house'>
+                         </label><br><br>
+                         <label>Numer mieszkania:<br>
+                         <input type='number' name='person_flat'>
+                         </label><br><br>
+                         <input type='submit' name='address_button' value='Dodaj adres'>
+                         </fieldset>
+                         </form>""".format(person.id)
+        phone_form = """<form action='/{}/addPhone/' method='post'>
+                         <fieldset>
+                         <legend><b>Telefony</b></legend>        
+                         <label>Telefon:<br>
+                         <input type='number' name='person_phone'>
+                         </label><br><br>
+                         <label>Rodzaj:<br>
+                         <select name='phone_type'>
+                         <option value='home'>domowy</option>
+                         <option value='work'>służbowy</option>
+                         </select>
+                         </label><br><br>
+                         <input type='submit' name='phone_button' value='Dodaj telefon'>
+                         </fieldset>
+                         </form>""".format(person.id)
+        email_form = """<form action='/{}/addEmail/' method='post'>
+                         <fieldset>
+                         <legend><b>Poczta</b></legend>        
+                         <label>E-mail:<br>
+                         <input type='email' name='person_email'>
+                         </label><br><br>
+                         <label>Rodzaj:<br>
+                         <select name='email_type'>
+                         <option value='home'>domowy</option>
+                         <option value='work'>służbowy</option>
+                         </select>
+                         </label><br><br>
+                         <input type='submit' name='email_button' value='Dodaj e-mail'>
+                         </fieldset>
+                         </form>""".format(person.id)
+        return personal_form.format(personal_data) + address_form + phone_form + email_form
+    else:
+        name = request.POST.get('person_name')
+        surname = request.POST.get('person_surname')
+        description = request.POST.get('person_description')
+        photo = request.POST.get('person_photo')
+
+
+@html_decorator
+def add_data(request, id):
+    response = HttpResponse()
+    person = Person.objects.get(id=id)
+    if request.POST.get('address_button') is not None:
+        city = request.POST.get('person_city')
+        street = request.POST.get('person_street')
+        house = request.POST.get('person_house')
+        flat = request.POST.get('person_flat')
+        address = Address.objects.create(city=city, street=street, house=house, flat=flat)
+        person.address = address
+        person.save()
+        response.write("""<p>Zmiana adresu {} {} na: \n {} ul. {} {}/{}</p>""".format(person.name,
+                                                                                      person.surname,
+                                                                                      address.city,
+                                                                                      address.street,
+                                                                                      address.house,
+                                                                                      address.flat))
+    elif request.POST.get('phone_button') is not None:
+        pass
+    else:
+        response.write("Błąd dodawania")
+    return response
 
 
 @csrf_exempt
@@ -101,7 +196,7 @@ def show_all(request):
         if delete_id is not None:
             return redirect('/delete/{}/'.format(delete_id))
         elif modify_id is not None:
-            pass
+            return redirect('/modify/{}/'.format(modify_id))
 
     return response
 
@@ -146,6 +241,6 @@ def show_person(request, id):
     else:
         res += "<p>brak</p>"
     res += "</fieldset></form>"
-    res += "<a href='/modify/{}' style='color: red;'>Edytuj osobę</a>"
+    res += "<a href='/modify/{}/' style='color: red;'>Edytuj osobę</a>".format(person.id)
 
     return res
