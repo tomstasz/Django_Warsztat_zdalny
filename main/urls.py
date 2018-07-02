@@ -25,7 +25,5 @@ urlpatterns = [
     url(r'^delete/(?P<id>\d+)/$', delete_person),
     url(r'^show/(?P<id>\d+)/$', show_person),
     url(r'^', show_all),
-    url(r'^(?P<id>\d+)/addAddress/$', add_data),
-    # url(r'^(?P<id>\d+)/addPhone/$', add_data),
-    # url(r'^(?P<id>\d+)/addEmail/$', add_data),
+    # url(r'^(?P<id>[0-9]+)/addAddress/$', add_data),
 ]
