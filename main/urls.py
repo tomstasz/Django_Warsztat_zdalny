@@ -24,6 +24,12 @@ urlpatterns = [
     url(r'^modify/(?P<id>\d+)/$', modify_person),
     url(r'^delete/(?P<id>\d+)/$', delete_person),
     url(r'^show/(?P<id>\d+)/$', show_person),
+    url(r'^groups/$', show_groups),
+    url(r'^add_to_group/(?P<id>[0-9]+)/$', add_to_group),
+    url(r'^show_members/(?P<id>[0-9]+)/$', show_group_members),
+    url(r'^del/(?P<name>[a-zA-Z]+)', delete_cookie),
+    url(r'^create_group/$', create_group),
+    url(r'^delete_group/(?P<id>[0-9]+)/$', delete_group),
+    url(r'^search-groups/$', search_groups),
     url(r'^', show_all),
-    # url(r'^(?P<id>[0-9]+)/addAddress/$', add_data),
 ]

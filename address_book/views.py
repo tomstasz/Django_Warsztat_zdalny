@@ -1,11 +1,9 @@
-from django.shortcuts import render
 from django.shortcuts import render, redirect
 from django.http import HttpResponse, Http404, HttpResponseRedirect
 from django.views.decorators.csrf import csrf_exempt
 from django.urls import reverse
 from django.views import View
 from django.utils.decorators import method_decorator
-from datetime import datetime, timedelta
 from address_book.models import Person, Address, Phone, Email, Groups
 from django.core.files.uploadedfile import SimpleUploadedFile
 
@@ -227,7 +225,6 @@ def modify_person(request, id):
             return res
 
 
-
 @csrf_exempt
 @html_decorator
 def delete_person(request, id):
@@ -253,7 +250,8 @@ def show_all(request):
                   <button name='delete' value='{}'>Skasuj</button><br><br>
                   </form>""".format(person.id, person.id)
     res += "</ol>"
-    res += "<a href='/new/' style='color: red;'>Dodaj osobę</a>"
+    res += """<a href='/new/' style='color: red;'>Dodaj osobę</a> 
+              <a href='/groups/' style='color: red;'>Pokaż grupy</a>"""
     response.write(html.format(res))
     if request.method == "POST":
         delete_id = request.POST.get('delete')
@@ -271,13 +269,14 @@ def show_person(request, id):
     person = Person.objects.get(id=id)
     res = ""
     res += "<h1>{} {}</h1>".format(person.name, person.surname)
-    res += "("
     if person.groups_set.all():
+        res += "<b>Należy do grup:</b>"
+        res += "<ul>"
         for group in person.groups_set.all():
-            res += "<i>{}</i>".format(group.name)
+            res += "<li><i>{}</i></li>".format(group.name)
+        res += "</ul>"
     else:
         res += "<i>nie należy do grup</i>"
-    res += ")"
     res += "<p>{} {}</p><br>".format(person.photo, person.description)
     res += "<form><fieldset>"
     res += "<legend><b>Dane kontaktowe</b></legend>"
@@ -307,6 +306,149 @@ def show_person(request, id):
         res += "<p>brak</p>"
     res += "</fieldset></form>"
     res += """<a href='/modify/{}/' style='color: red;'>Edytuj osobę</a>
-              <a href='/' style='color: red;'>Pokaż wszystkie kontakty</a>""".format(person.id)
+              <a href='/' style='color: red;'>Pokaż wszystkie kontakty</a>
+              <a href='/add_to_group/{}/' style='color: red;'>Dodaj do grupy</a>""".format(person.id, person.id)
 
     return res
+
+
+@html_decorator
+def show_groups(request):
+    groups = Groups.objects.all()
+    search_link = " <a href='/search-groups/' style='color: red;'>Szukaj członków grup</a>"
+    res = "<ul>"
+    for group in groups:
+        res += "<li><a href='/show_members/{}/'><h3>{}</h3></a></li><br>".format(group.id, group.name)
+    res += "</ul>"
+    res += "<a href='/create_group/' style='color: red;'>Stwórz nową grupę</a>" + search_link
+
+    return res
+
+
+@html_decorator
+def show_group_members(request, id):
+    group = Groups.objects.get(id=id)
+    res = ""
+    if request.method == "GET":
+        res += """<h3>Grupa '{}'</h3>""".format(group.name)
+        res += """<small><a href='/delete_group/{}/'>Usuń grupę</a></small>""".format(group.id)
+        res += "<ul>"
+        for member in group.person.all():
+            res += "<li><a href='/show/{}/'>{} {}</a></li><br>""".format(member.id, member.surname, member.name)
+        res += "</ul>"
+
+    return res
+
+
+@csrf_exempt
+@form_decorator
+def add_to_group(request, id):
+    person = Person.objects.get(id=id)
+    groups = Groups.objects.all()
+    res = ""
+    if request.method == 'GET':
+        for group in groups:
+            res += """<label>{}
+                     <input type='checkbox' name='member' value={}>
+                     </label><br><br>""".format(group.name, group.id)
+
+        res += "<input type='submit' value='dodaj'>"
+        return res
+    else:
+        for group in groups:
+            for selected in request.POST.getlist('member'):
+                if group.id == int(selected):
+                    group.person.add(person)
+                    res += "{} {} dodany do grupy '{}'<br>".format(person.name, person.surname, group.name)
+        res += "<br><a href='/show/{}/'>Wróć</a>".format(person.id)
+
+    return res
+
+
+def delete_cookie(request, name):
+    response = HttpResponse()
+    if name in request.COOKIES:
+        response.delete_cookie(name)
+        response.write("Ciasteczko '{}' skasowane<br>".format(name))
+    else:
+        response.write("brak ciasteczka")
+    return response
+
+
+@csrf_exempt
+@form_decorator
+def create_group(request):
+    res = ""
+    if request.method == 'GET':
+        res += """<label>Nazwa grupy:
+                 <input type='text' name='group_name'>
+                 </label>
+                 <input type='submit' value='załóż grupę'>"""
+
+    else:
+        name = request.POST.get('group_name')
+        Groups.objects.create(name=name)
+        res += "Założono grupę '{}'<br><br>".format(name)
+        res += "<a href='/groups/' style='color: red;'>Pokaż grupy</a>"
+
+    return res
+
+
+@html_decorator
+def delete_group(request, id):
+    res = ""
+    if request.method == "GET":
+        group = Groups.objects.get(id=id)
+        group.delete()
+        res += "Grupa '{}' skasowana<br><br>".format(group.name)
+    res += "<a href='/groups/' style='color: red;'>Pokaż grupy</a>"
+    return res
+
+
+@csrf_exempt
+@form_decorator
+def search_groups(request):
+    res = ""
+    if request.method == 'GET':
+        res += """<label>Imię:
+                  <input type='text' name='s_name'>
+                  </label>"""
+        res += """<label>Nazwisko:
+                  <input type='text' name='s_surname'>
+                  </label>"""
+        res += "<input type='submit' value='szukaj'>"
+    else:
+        name = request.POST.get('s_name')
+        surname = request.POST.get('s_surname')
+
+        if name is not None and surname is None:
+            try:
+                persons = Person.objects.filter(name__contains=name.title())
+            except Http404:
+                return "nie ma takiej osoby"
+        elif name is None and surname is not None:
+            try:
+                persons = Person.objects.filter(surname__contains=surname.title())
+            except Http404:
+                return "nie ma takiej osoby"
+        elif (name and surname) is not None:
+            try:
+                persons = Person.objects.filter(name__contains=name.title(), surname__contains=surname.title())
+            except Http404:
+                return "nie ma takiej osoby"
+        else:
+            raise Http404
+
+        for person in persons:
+            if person.groups_set.all():
+                res += "{} {} należy do:".format(person.name, person.surname)
+                res += "<ul>"
+                for group in person.groups_set.all():
+                    res += "<li>{}</li>".format(group.name)
+                res += '</ul><br><br>'
+            else:
+                res += "Osoba nie należy do zadnej grupy"
+
+    return res
+
+

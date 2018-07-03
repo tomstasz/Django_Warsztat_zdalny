@@ -20,10 +20,6 @@ class Person(models.Model):
 
 
 class Phone(models.Model):
-    # phone_type = ((-1, 'brak'),
-    #               (1, 'domowy'),
-    #               (2, 'służbowy'),
-    #               )
     number = models.IntegerField(default=None)
     type = models.CharField(max_length=32, default='brak')
     person = models.ForeignKey(Person, on_delete=models.CASCADE)
