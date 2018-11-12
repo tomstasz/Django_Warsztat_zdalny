@@ -1,11 +1,8 @@
-from django.shortcuts import render, redirect
-from django.http import HttpResponse, Http404, HttpResponseRedirect
+from django.shortcuts import redirect
+from django.http import HttpResponse, Http404
 from django.views.decorators.csrf import csrf_exempt
-from django.urls import reverse
-from django.views import View
-from django.utils.decorators import method_decorator
 from address_book.models import Person, Address, Phone, Email, Groups
-from django.core.files.uploadedfile import SimpleUploadedFile
+
 
 # Create your views here.
 
