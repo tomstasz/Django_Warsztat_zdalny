@@ -147,7 +147,12 @@ def modify_person(request, id):
         delete_mail += "</select></label> <input type='submit' name='del_mail' value='skasuj'>"
         delete_mail += "</form>"
 
-        return personal_form.format(personal_data) + address_form + phone_form + email_form + delete_phone + delete_mail
+        return personal_form.format(personal_data) \
+               + address_form \
+               + phone_form + email_form \
+               + delete_phone \
+               + delete_mail \
+               + "<br><a href='/show/{}/'>Wróć</a>".format(person.id)
     else:
         if request.POST.get('personal') is not None:
             name = request.POST.get('person_name')
@@ -181,12 +186,16 @@ def modify_person(request, id):
         elif request.POST.get('phone_button') is not None:
             phone = request.POST.get('person_phone')
             type = request.POST.get('phone_type')
-            new_phone = Phone.objects.create(number=phone, type=type, person=person)
-            res = "Dodano {} telefon {} dla {} {}".format(new_phone.type,
-                                                          new_phone.number,
-                                                          person.name,
-                                                          person.surname)
-            res += "<br><br><a href='/show/{}/' style='color: red;'>Pokaż osobę</a>".format(person.id)
+            if phone:
+                new_phone = Phone.objects.create(number=phone, type=type, person=person)
+                res = "Dodano {} telefon {} dla {} {}".format(new_phone.type,
+                                                              new_phone.number,
+                                                              person.name,
+                                                              person.surname)
+                res += "<br><br><a href='/show/{}/' style='color: red;'>Pokaż osobę</a>".format(person.id)
+            else:
+                res = "Proszę podać numer telefonu."
+                res += "<br><br><a href='/modify/{}/'>wróć</a>".format(person.id)
 
             return res
         elif request.POST.get('email_button') is not None:
