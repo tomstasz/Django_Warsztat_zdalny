@@ -205,12 +205,16 @@ def modify_person(request, id):
         elif request.POST.get('email_button') is not None:
             mail = request.POST.get('person_email')
             type = request.POST.get('email_type')
-            new_mail = Email.objects.create(e_mail=mail, type=type, person=person)
-            res = "Dodano {} e-mail {} dla {} {}".format(new_mail.type,
-                                                         new_mail.e_mail,
-                                                         person.name,
-                                                         person.surname)
-            res += "<br><br><a href='/show/{}/' style='color: red;'>Pokaż osobę</a>".format(person.id)
+            if mail:
+                new_mail = Email.objects.create(e_mail=mail, type=type, person=person)
+                res = "Dodano {} e-mail {} dla {} {}".format(new_mail.type,
+                                                             new_mail.e_mail,
+                                                             person.name,
+                                                             person.surname)
+                res += "<br><br><a href='/show/{}/' style='color: red;'>Pokaż osobę</a>".format(person.id)
+            else:
+                res = "Proszę podać adres email."
+                res += "<br><br><a href='/modify/{}/'>wróć</a>".format(person.id)
 
             return res
         elif request.POST.get('del_phone') is not None:
