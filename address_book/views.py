@@ -245,7 +245,10 @@ def delete_person(request, id):
     person = Person.objects.get(id=id)
     if person:
         person.delete()
-        return "Skasowano {} {}".format(person.name, person.surname)
+        res = "Skasowano {} {}".format(person.name, person.surname)
+        res += "<br><br>"
+        res += "<a href='/'>wróć</a>"
+        return res
     else:
         return "Nie ma takiej osoby"
 
@@ -335,6 +338,8 @@ def show_groups(request):
         res += "<li><a href='/show_members/{}/'><h3>{}</h3></a></li><br>".format(group.id, group.name)
     res += "</ul>"
     res += "<a href='/create_group/' style='color: red;'>Stwórz nową grupę</a>" + search_link
+    res += "<br><br>"
+    res += "<a href='/'>wróć</a>"
 
     return res
 
@@ -367,6 +372,8 @@ def add_to_group(request, id):
                      </label><br><br>""".format(group.name, group.id)
 
         res += "<input type='submit' value='dodaj'>"
+        res += "<br><br>"
+        res += "<br><a href='/show/{}/'>Wróć</a>".format(person.id)
         return res
     else:
         for group in groups:
@@ -431,7 +438,7 @@ def search_groups(request):
                   <input type='text' name='s_surname'>
                   </label>"""
         res += "<input type='submit' value='szukaj'>"
-        res += "<br>"
+        res += "<br><br>"
         res += "<a href='/'>wróć</a>"
     else:
         name = request.POST.get('s_name')
