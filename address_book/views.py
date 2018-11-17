@@ -50,9 +50,14 @@ def create_person(request):
         surname = request.POST.get('person_surname')
         description = request.POST.get('person_description')
         photo = request.POST.get('person_photo')
-        Person.objects.create(name=name, surname=surname, description=description, photo=photo)
-        last = Person.objects.latest('id')
-        return redirect('/show/{}/'.format(last.id))
+        if name and surname:
+            Person.objects.create(name=name, surname=surname, description=description, photo=photo)
+            last = Person.objects.latest('id')
+            return redirect('/show/{}/'.format(last.id))
+        else:
+            response.write("Proszę podać imię i nazwisko nowego kontaktu")
+            response.write('<br><br>')
+            response.write("<a href='/'>wróć</a>")
 
     return response
 
