@@ -148,11 +148,11 @@ def modify_person(request, id):
         delete_mail += "</form>"
 
         return personal_form.format(personal_data) \
-               + address_form \
-               + phone_form + email_form \
-               + delete_phone \
-               + delete_mail \
-               + "<br><a href='/show/{}/'>Wróć</a>".format(person.id)
+            + address_form \
+            + phone_form + email_form \
+            + delete_phone \
+            + delete_mail \
+            + "<br><a href='/show/{}/'>Wróć</a>".format(person.id)
     else:
         if request.POST.get('personal') is not None:
             name = request.POST.get('person_name')
@@ -172,16 +172,20 @@ def modify_person(request, id):
             street = request.POST.get('person_street')
             house = request.POST.get('person_house')
             flat = request.POST.get('person_flat')
-            address = Address.objects.create(city=city, street=street, house_number=house, flat_number=flat)
-            person.address = address
-            person.save()
-            res = """Zmiana adresu {} {} na: \n {} ul. {} {}/{}""".format(person.name,
-                                                                          person.surname,
-                                                                          address.city,
-                                                                          address.street,
-                                                                          address.house_number,
-                                                                          address.flat_number)
-            res += "<br><br><a href='/show/{}/' style='color: red;'>Pokaż osobę</a>".format(person.id)
+            if city and street and house and flat:
+                address = Address.objects.create(city=city, street=street, house_number=house, flat_number=flat)
+                person.address = address
+                person.save()
+                res = """Zmiana adresu {} {} na: \n {} ul. {} {}/{}""".format(person.name,
+                                                                              person.surname,
+                                                                              address.city,
+                                                                              address.street,
+                                                                              address.house_number,
+                                                                              address.flat_number)
+                res += "<br><br><a href='/show/{}/' style='color: red;'>Pokaż osobę</a>".format(person.id)
+            else:
+                res = "Proszę podać pełne dane adresowe."
+                res += "<br><br><a href='/modify/{}/'>wróć</a>".format(person.id)
             return res
         elif request.POST.get('phone_button') is not None:
             phone = request.POST.get('person_phone')
