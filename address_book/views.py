@@ -164,7 +164,7 @@ def modify_person(request, id):
             person.description = description
             person.photo = photo
             person.save()
-            res = "Zmiana danych {} {}".format(person.name, person.surname)
+            res = "Zapisano dane {} {}".format(person.name, person.surname)
             res += "<br><br><a href='/show/{}/' style='color: red;'>Pokaż osobę</a>".format(person.id)
             return res
         elif request.POST.get('address_button') is not None:
