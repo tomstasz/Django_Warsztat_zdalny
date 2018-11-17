@@ -431,6 +431,8 @@ def search_groups(request):
                   <input type='text' name='s_surname'>
                   </label>"""
         res += "<input type='submit' value='szukaj'>"
+        res += "<br>"
+        res += "<a href='/'>wróć</a>"
     else:
         name = request.POST.get('s_name')
         surname = request.POST.get('s_surname')
