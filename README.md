@@ -1,2 +1,2 @@
 # Django_Warsztat_zdalny
-Simple address book, allowing users to create/modify contacts or divide them into groups.
+Simple address book that allows users to create/modify contacts or divide them into groups.
